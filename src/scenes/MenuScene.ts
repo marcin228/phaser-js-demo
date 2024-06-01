@@ -1,10 +1,12 @@
 import { Scene } from 'phaser';
+import ScreenHelper from '../helpers/ScreenHelper';
 
 export default class MenuScene extends Scene
 {
     constructor (){
     
         super('MenuScene');
+        Phaser.GameObjects.Image.prototype.setDisplaySize
     }
 
     preload(){
@@ -16,28 +18,16 @@ export default class MenuScene extends Scene
 
     create(){
 
-        let screenWidth:number = 0;
-        let screenHeight:number = 0;
-        
-        if(typeof this.sys.game.config.width == 'string') 
-            screenWidth = parseInt(this.sys.game.config.width);
-        else
-            screenWidth = this.sys.game.config.width;
-        
-        if(typeof this.sys.game.config.height == 'string')
-            screenHeight = parseInt(this.sys.game.config.height);
-        else
-            screenHeight = this.sys.game.config.height;
+        const screen = ScreenHelper.getScreenDimensions(this);
 
         this.sound.add('backgroundMusic');
         this.sound.play('backgroundMusic');
 
         let background01 = this.add.image(0, 0, 'background01').setOrigin(0,0);
-        background01.displayHeight = screenHeight;
-        background01.displayWidth = screenWidth;
+        background01.setDisplaySize(screen.width, screen.height);
         background01.setInteractive().on('pointerdown', () => this.scene.start('MainScene'));
 
-        let title01 = this.add.image(screenWidth / 2, 0, 'title01').setOrigin(0.5, 0);
+        let title01 = this.add.image(screen.width / 2, 0, 'title01').setOrigin(0.5, 0);
         this.tweens.add({
             
             targets: title01,
