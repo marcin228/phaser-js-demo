@@ -29,6 +29,7 @@ export default class MainScene extends Scene{
         const screen = ScreenHelper.getScreenDimensions(this);
 
         this.sound.stopByKey('backgroundMusic');
+        this.sound.play('backgroundMusic');
 
         this.backgroundIdx3 = this.add.tileSprite(960, 540, 1920, 1080, 'backgroundIdx3').setDisplaySize(screen.width, screen.height);
         this.backgroundIdx2 = this.add.tileSprite(960, 540, 1920, 1080, 'backgroundIdx2').setDisplaySize(screen.width, screen.height);
@@ -45,29 +46,21 @@ export default class MainScene extends Scene{
             repeat: -1
         });
 
-        this.anims.create({
-            key:'jump',
-            frames: this.anims.generateFrameNumbers('runner', {start: 2, end: 2}),
-            frameRate: 10,
-            repeat: -1
-        });
-
         this.input.keyboard?.on('keydown-SPACE', this.makeRunnerJump, this);
+
+        this.runner.anims.play('run', true);
     }
 
     makeRunnerJump(){
 
         if(!this.isJumping){
-            if(this.runner.body?.velocity?.y === -0 || this.runner.body?.velocity?.y === 0){
+            this.isJumping = true;
+            this.runner.setVelocityY(-300);
 
-                this.isJumping = true;
-                this.runner.setVelocityY(-300);
-                this.runner.anims.play('jump', true);
+            if(this.runner.anims.currentAnim){
+                this.runner.anims.currentAnim.pause();
+                this.runner.anims.setCurrentFrame(this.runner.anims.currentAnim.frames[3])
             }
-        }
-        else if(this.runner.body?.velocity?.y === -0 || this.runner.body?.velocity?.y === 0){
-        
-            this.isJumping = false;
         }
     }
 
@@ -77,6 +70,10 @@ export default class MainScene extends Scene{
         this.backgroundIdx2.tilePositionX += 4;
         this.backgroundIdx3.tilePositionX += 1;
 
-        this.runner.anims.play('run', true);
+        if(this.runner?.body?.blocked.down)
+            this.isJumping = false;
+        
+        if(!this.isJumping)
+            this.runner.anims.currentAnim?.resume();
     }
 }
