@@ -6,14 +6,13 @@ export default class MenuScene extends Scene
     constructor (){
     
         super('MenuScene');
-        Phaser.GameObjects.Image.prototype.setDisplaySize
     }
 
     preload(){
 
         this.load.audio('backgroundMusic', 'assets/snd/2021-08-30_-_Boss_Time_-_www.FesliyanStudios.com.mp3');
         this.load.image('background01', 'assets/img/background01.png');
-        this.load.image('title01', 'assets/img/TOKYO-RUN-1-06-2024.png');
+        this.load.image('title01', 'assets/img/tokyorun.png');
     }
 
     create(){
