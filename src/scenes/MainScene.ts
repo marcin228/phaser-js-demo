@@ -7,6 +7,7 @@ export default class MainScene extends Scene{
     private backgroundIdx2:Phaser.GameObjects.TileSprite;
     private backgroundIdx3:Phaser.GameObjects.TileSprite;
 
+    private cars:Phaser.Physics.Arcade.Group;
     private splash:Phaser.GameObjects.Sprite;
     private runner:Phaser.Physics.Arcade.Sprite;
     private isJumping:boolean;
@@ -21,6 +22,7 @@ export default class MainScene extends Scene{
         this.load.image('backgroundIdx1', 'assets/img/backgroundIdx1.png');
         this.load.image('backgroundIdx2', 'assets/img/backgroundIdx2.png');
         this.load.image('backgroundIdx3', 'assets/img/backgroundIdx3.png');
+        this.load.image('car1', 'assets/img/car1.png');
 
         this.load.spritesheet('runner', 'assets/img/run.png', { frameWidth: 512, frameHeight: 512 });
         this.load.spritesheet('splash', 'assets/img/splash.png', { frameWidth: 512, frameHeight: 512 });
@@ -41,7 +43,7 @@ export default class MainScene extends Scene{
         this.splash = this.add.sprite(this.runner.x, 0, 'splash').setScale(0.2);
         this.splash.visible = false;
         this.splash.on('animationcomplete', (animation:any, frame:any) => {
-            if(animation.key === 'splash')
+            if(animation.key == 'splash')
                 this.splash.visible = false;
         }, this);
 
@@ -65,6 +67,16 @@ export default class MainScene extends Scene{
         this.input.keyboard?.on('keydown-SPACE', this.makeRunnerJump, this);
 
         this.runner.anims.play('run', true);
+        this.cars = this.physics.add.group();
+
+        this.incomingTraffic();
+
+        this.physics.add.collider(this.runner, this.cars, (one, rest) => { 
+            //console.log(one, rest) 
+        });
+
+        //this.physics.add.overlap(this.layer, enemy, () => {
+        //});
     }
 
     makeRunnerJump(){
@@ -84,6 +96,21 @@ export default class MainScene extends Scene{
         }
     }
 
+    incomingTraffic(){
+
+        for(let i = 0; i < 2; i++){
+
+            const speed = Phaser.Math.Between(-200,-500);
+            const screen = ScreenHelper.getScreenDimensions(this);
+            const car = this.cars.create(screen.width - speed, screen.height,'car1');
+
+            car.y -= car.displayHeight / 2;
+            (car.body as Phaser.Physics.Arcade.Body).allowGravity = false;
+            car.setVelocityX(speed);
+            (car.body as Phaser.Physics.Arcade.Body).setImmovable(true);
+        }
+    }
+
     update(){
 
         this.backgroundIdx1.tilePositionX += 8;
@@ -98,5 +125,19 @@ export default class MainScene extends Scene{
         
         if(!this.isJumping)
             this.runner.anims.currentAnim?.resume();
+
+        const screen = ScreenHelper.getScreenDimensions(this);
+
+        this.cars.children.iterate((car:Phaser.GameObjects.GameObject):boolean | null => {
+
+            const ptr = (car as unknown as Phaser.Physics.Arcade.Sprite);
+            if(ptr.x < -ptr.displayWidth)
+                ptr.x = screen.width; 
+
+            return null;
+        });
+
+        if(this.runner.x != 100)
+            this.scene.start('GameOverScene')
     }
 }

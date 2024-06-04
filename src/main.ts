@@ -14,7 +14,7 @@ const config: Types.Core.GameConfig = {
     width: screenSize.width,
     height: screenSize.height,
     parent: 'game-container',
-    backgroundColor: '#fff',
+    backgroundColor: '#000',
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
@@ -23,8 +23,8 @@ const config: Types.Core.GameConfig = {
     physics: {
         default:'arcade',
         arcade:{
-            gravity: {x:0,y:300},
-            debug: true
+            gravity: {x:0, y:300},
+            debug: false
         }
     }
 };
