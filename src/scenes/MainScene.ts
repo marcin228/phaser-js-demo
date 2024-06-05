@@ -66,7 +66,10 @@ export default class MainScene extends Scene{
             repeat: 0
         });
 
-        this.input.keyboard?.on('keydown-SPACE', this.makeRunnerJump, this);
+        const spaceBar = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        if(spaceBar)
+            spaceBar.on('down', this.makeRunnerJump, this);
+        this.input.on('pointerdown', this.makeRunnerJump, this);
 
         this.runner.anims.play('run', true);
         this.cars = this.physics.add.group();

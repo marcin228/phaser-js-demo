@@ -25,6 +25,9 @@ export default class MenuScene extends Scene
         let background01 = this.add.image(0, 0, 'background01').setOrigin(0,0);
         background01.setDisplaySize(screen.width, screen.height);
         background01.setInteractive().on('pointerdown', () => this.scene.start('MainScene'));
+        const spaceBar = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        if(spaceBar)
+            spaceBar.on('down', () => { this.scene.start('MainScene') }, this);
 
         let title01 = this.add.image(screen.width / 2, 0, 'title01').setOrigin(0.5, 0);
         this.tweens.add({
