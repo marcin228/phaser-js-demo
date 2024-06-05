@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 import ScreenHelper from '../helpers/ScreenHelper';
+import ControlsHelper from '../helpers/ControlsHelper';
 
 export default class GameOverScene extends Scene{
 
@@ -34,10 +35,7 @@ export default class GameOverScene extends Scene{
             onComplete: () => {}
         })
 
-        this.input.on('pointerdown', () => this.scene.start('MenuScene'));
-        const spaceBar = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        if(spaceBar)
-            spaceBar.on('down', () => { this.scene.start('MenuScene') }, this);
+        ControlsHelper.gotoSceneOnPointerDownOrSpace('MenuScene', this);
     }
 
     update(){

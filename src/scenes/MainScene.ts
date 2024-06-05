@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 import ScreenHelper from '../helpers/ScreenHelper';
+import ControlsHelper from '../helpers/ControlsHelper';
 
 export default class MainScene extends Scene{
 
@@ -66,10 +67,14 @@ export default class MainScene extends Scene{
             repeat: 0
         });
 
+        ControlsHelper.callbackOnPointerDownOrSpace(this.makeRunnerJump, this);
+
+        /*
         const spaceBar = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         if(spaceBar)
             spaceBar.on('down', this.makeRunnerJump, this);
         this.input.on('pointerdown', this.makeRunnerJump, this);
+        */
 
         this.runner.anims.play('run', true);
         this.cars = this.physics.add.group();
