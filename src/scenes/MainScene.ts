@@ -35,7 +35,8 @@ export default class MainScene extends Scene{
         this.load.image('backgroundIdx3', 'assets/img/backgroundIdx3.png');
         this.load.image('car11', 'assets/img/car11.png');
         this.load.image('car12', 'assets/img/car12.png');
-        this.load.image('car2', 'assets/img/car2.png');
+        this.load.image('car21', 'assets/img/car21.png');
+        this.load.image('car22', 'assets/img/car22.png');
         this.load.image('car3', 'assets/img/car3.png');
 
         this.load.spritesheet('runner', 'assets/img/run.png', { frameWidth: 512, frameHeight: 512 });
