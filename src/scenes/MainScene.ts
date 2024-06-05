@@ -1,4 +1,4 @@
-import { Scene } from 'phaser';
+import { Scene, Tweens } from 'phaser';
 import ScreenHelper from '../helpers/ScreenHelper';
 import ControlsHelper from '../helpers/ControlsHelper';
 import SmallVehicle from '../classes/SmallVehicle';
@@ -15,6 +15,12 @@ export default class MainScene extends Scene{
     private splash:Phaser.GameObjects.Sprite;
     private runner:Phaser.Physics.Arcade.Sprite;
     private isJumping:boolean;
+    private midJumpBoost:boolean;
+
+    private boost:Phaser.GameObjects.Sprite;
+    private boostInfo:Phaser.GameObjects.Sprite;
+    private boostTweenChain:Phaser.Tweens.TweenChain;
+    private boostInfoTweenChain:Phaser.Tweens.TweenChain;
 
     private progressCurrentLevel:number;
     private progressRequiredForNextLevel:number;
@@ -25,6 +31,7 @@ export default class MainScene extends Scene{
 
         this.progressCurrentLevel = 0;
         this.progressRequiredForNextLevel = 1;
+        this.midJumpBoost = false;
     }
 
     preload(){
@@ -38,6 +45,9 @@ export default class MainScene extends Scene{
         this.load.image('car21', 'assets/img/car21.png');
         this.load.image('car22', 'assets/img/car22.png');
         this.load.image('car3', 'assets/img/car3.png');
+
+        this.load.image('boostinfo', 'assets/img/boostinfo.png');
+        this.load.image('boost', 'assets/img/boost.png');
 
         this.load.spritesheet('runner', 'assets/img/run.png', { frameWidth: 512, frameHeight: 512 });
         this.load.spritesheet('splash', 'assets/img/splash.png', { frameWidth: 512, frameHeight: 512 });
@@ -54,9 +64,80 @@ export default class MainScene extends Scene{
         bgSound.setLoop(true);
         bgSound.play();
 
-        this.backgroundIdx3 = this.add.tileSprite(960, 540, 1920, 1080, 'backgroundIdx3').setDisplaySize(screen.width, screen.height);
-        this.backgroundIdx2 = this.add.tileSprite(960, 540, 1920, 1080, 'backgroundIdx2').setDisplaySize(screen.width, screen.height);
-        this.backgroundIdx1 = this.add.tileSprite(960, 540, 1920, 1080, 'backgroundIdx1').setDisplaySize(screen.width, screen.height);
+        this.backgroundIdx3 = this.add.tileSprite(0, 0, 960, 540, 'backgroundIdx3').setDisplayOrigin(0,0);
+        this.backgroundIdx3.setDisplaySize(screen.width, screen.height);
+        this.backgroundIdx2 = this.add.tileSprite(0, 0, 960, 540, 'backgroundIdx2').setDisplayOrigin(0,0);
+        this.backgroundIdx2.setDisplaySize(screen.width, screen.height);
+        this.backgroundIdx1 = this.add.tileSprite(0, 0, 1920, 1080, 'backgroundIdx1').setDisplayOrigin(0,0)
+        this.backgroundIdx1.setDisplaySize(screen.width, screen.height);
+
+        this.boostInfo = this.add.sprite(0, 0, 'boostinfo');
+        this.boostInfo.setOrigin(0.5, 0);
+        this.boostInfo.alpha = 0;
+        this.boostInfo.x = screen.width / 2;
+        this.boostInfo.y = -this.boostInfo.displayHeight;
+
+        this.boostInfoTweenChain = this.tweens.chain({
+
+            persist: true,
+            targets: this.boostInfo,
+            tweens: [{
+            
+                alpha: 1,
+                y: screen.height / 3,
+                ease: 'Power1',
+                duration: 250,
+                repeat: 0,
+                onStart: () => {},
+                onComplete: () => {}
+            }, { alpha:1, repeat: 0, duration: 800 }, {
+                
+                alpha: 0,
+                ease: 'Power1',
+                scaleX: 1.3,
+                duration: 250,
+                repeat: 0,
+                onStart: () => {},
+                onComplete: () => {
+                    this.boostInfo.scaleX = 1;
+                    this.boostInfo.y = -this.boostInfo.displayHeight;
+                }
+            }]
+        });
+
+        this.boostInfoTweenChain.pause();
+
+        this.boost = this.add.sprite(screen.width, 0, 'boost');
+        this.boost.setDisplayOrigin(0,0);
+        this.boost.x -= this.boost.displayWidth;
+        this.boost.alpha = 0;
+        this.boost.scale = 0;
+
+        this.boostTweenChain = this.tweens.chain({
+
+            persist: true,
+            targets: this.boost,
+            tweens: [{
+            
+                alpha: 1,
+                scale: 1.2,
+                ease: 'Power1',
+                duration: 250,
+                repeat: 0,
+                onStart: () => {},
+                onComplete: () => {}
+            }, {
+
+                ease: 'Power1',
+                scale: 1,
+                duration: 50,
+                repeat: 0,
+                onStart: () => {},
+                onComplete: () => {}
+            }]
+        });
+
+        this.boostTweenChain.pause();
 
         this.runner = this.physics.add.sprite(100, screen.height/1.33, 'runner').setScale(0.2);
         this.splash = this.add.sprite(this.runner.x, 0, 'splash').setScale(0.2);
@@ -99,6 +180,13 @@ export default class MainScene extends Scene{
     }
 
     makeRunnerJump(){
+
+        if(this.isJumping && this.midJumpBoost){
+            this.runner.setVelocityY(-320);
+            this.midJumpBoost = false;
+            this.boost.alpha = 0;
+            this.boost.scale = 0;
+        }
 
         if(!this.isJumping){
 
@@ -166,7 +254,14 @@ export default class MainScene extends Scene{
         });
 
         if(this.progressCurrentLevel == this.progressRequiredForNextLevel){
-  
+
+            if(!this.midJumpBoost){
+                
+                this.boostInfoTweenChain.restart();
+                this.boostTweenChain.restart();
+            }
+            
+            this.midJumpBoost = true;
             this.incomingTraffic();
             this.progressRequiredForNextLevel += this.progressRequiredForNextLevel;
         }
@@ -175,6 +270,8 @@ export default class MainScene extends Scene{
 
             this.progressCurrentLevel = 0;
             this.progressRequiredForNextLevel = 1;
+            this.midJumpBoost = false;
+            this.cars.clear(true);
 
             this.sound.stopAll();
             this.sound.play('sfxCrash');
