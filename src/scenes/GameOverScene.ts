@@ -5,6 +5,7 @@ import ControlsHelper from '../helpers/ControlsHelper';
 export default class GameOverScene extends Scene{
 
     private endScreen:Phaser.GameObjects.Image;
+    private gameOver:Phaser.GameObjects.Image;
 
     constructor (){
     
@@ -20,17 +21,21 @@ export default class GameOverScene extends Scene{
     create(){
 
         const screen = ScreenHelper.getScreenDimensions(this);
-        this.endScreen = this.add.image(0, 0, 'endScreen').setOrigin(0, 0).setDisplaySize(screen.width, screen.height);
 
-        const gameOver = this.add.image(screen.width / 2, 0, 'gameOver').setOrigin(0.5, 0);
+        this.endScreen = this.add.image(0, 0, 'endScreen').setOrigin(0, 0).setDisplaySize(screen.width, screen.height);
+        this.gameOver = this.add.image(screen.width / 2, 0, 'gameOver').setOrigin(0.5, 0);
+        this.gameOver.alpha = 0;
+        this.gameOver.scale = 0.3;
+
         this.tweens.add({
             
-            targets: gameOver,
-            scale: 1.05,
+            targets: this.gameOver,
+            alpha: 1,
+            scale: 1,
+            y: screen.height / 3,
             ease: 'Power1',
-            duration: 200,
-            repeat: -1,
-            yoyo:true,
+            duration: 2000,
+            repeat: 0,
             onStart: () => {},
             onComplete: () => {}
         })
