@@ -19,6 +19,7 @@ export default class MainScene extends Scene{
 
     preload(){
 
+        this.load.audio('sfxCrash', 'assets/snd/crash.mp3');
         this.load.image('backgroundIdx1', 'assets/img/backgroundIdx1.png');
         this.load.image('backgroundIdx2', 'assets/img/backgroundIdx2.png');
         this.load.image('backgroundIdx3', 'assets/img/backgroundIdx3.png');
@@ -32,6 +33,7 @@ export default class MainScene extends Scene{
 
         const screen = ScreenHelper.getScreenDimensions(this);
 
+        this.sound.add('sfxCrash');
         this.sound.stopByKey('backgroundMusic');
         this.sound.play('backgroundMusic');
 
@@ -39,7 +41,7 @@ export default class MainScene extends Scene{
         this.backgroundIdx2 = this.add.tileSprite(960, 540, 1920, 1080, 'backgroundIdx2').setDisplaySize(screen.width, screen.height);
         this.backgroundIdx1 = this.add.tileSprite(960, 540, 1920, 1080, 'backgroundIdx1').setDisplaySize(screen.width, screen.height);
 
-        this.runner = this.physics.add.sprite(100, 100, 'runner').setScale(0.2);
+        this.runner = this.physics.add.sprite(100, screen.height/1.33, 'runner').setScale(0.2);
         this.splash = this.add.sprite(this.runner.x, 0, 'splash').setScale(0.2);
         this.splash.visible = false;
         this.splash.on('animationcomplete', (animation:any, frame:any) => {
@@ -137,7 +139,11 @@ export default class MainScene extends Scene{
             return null;
         });
 
-        if(this.runner.x != 100)
-            this.scene.start('GameOverScene')
+        if(this.runner.x != 100){
+
+            this.sound.stopAll();
+            this.sound.play('sfxCrash');
+            this.scene.start('GameOverScene');
+        }
     }
 }

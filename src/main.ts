@@ -2,17 +2,14 @@ import MenuScene from "./scenes/MenuScene";
 import GameOverScene from "./scenes/GameOverScene";
 import MainScene from "./scenes/MainScene";
 import { Game, Types } from "phaser";
+import GameConfigHelper from "./helpers/GameConfigHelper";
 
-type ScreenSize = {
-    width:number,
-    height:number
-}
-const screenSize:ScreenSize = {width:1920, height:1080}
+const gameConfig = new GameConfigHelper();
 
 const config: Types.Core.GameConfig = {
     type: Phaser.WEBGL,
-    width: screenSize.width,
-    height: screenSize.height,
+    width: gameConfig.getScreenSize().width,
+    height: gameConfig.getScreenSize().height,
     parent: 'game-container',
     backgroundColor: '#000',
     scale: {
