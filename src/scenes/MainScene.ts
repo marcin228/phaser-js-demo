@@ -1,6 +1,9 @@
 import { Scene } from 'phaser';
 import ScreenHelper from '../helpers/ScreenHelper';
 import ControlsHelper from '../helpers/ControlsHelper';
+import SmallVehicle from '../classes/SmallVehicle';
+import MediumVehicle from '../classes/MediumVehicle';
+import LargeVehicle from '../classes/LargeVehicle';
 
 export default class MainScene extends Scene{
 
@@ -13,9 +16,15 @@ export default class MainScene extends Scene{
     private runner:Phaser.Physics.Arcade.Sprite;
     private isJumping:boolean;
 
-    constructor (){
+    private progressCurrentLevel:number;
+    private progressRequiredForNextLevel:number;
+
+    constructor(){
 
         super('MainScene');
+
+        this.progressCurrentLevel = 0;
+        this.progressRequiredForNextLevel = 1;
     }
 
     preload(){
@@ -24,7 +33,10 @@ export default class MainScene extends Scene{
         this.load.image('backgroundIdx1', 'assets/img/backgroundIdx1.png');
         this.load.image('backgroundIdx2', 'assets/img/backgroundIdx2.png');
         this.load.image('backgroundIdx3', 'assets/img/backgroundIdx3.png');
-        this.load.image('car1', 'assets/img/car1.png');
+        this.load.image('car11', 'assets/img/car11.png');
+        this.load.image('car12', 'assets/img/car12.png');
+        this.load.image('car2', 'assets/img/car2.png');
+        this.load.image('car3', 'assets/img/car3.png');
 
         this.load.spritesheet('runner', 'assets/img/run.png', { frameWidth: 512, frameHeight: 512 });
         this.load.spritesheet('splash', 'assets/img/splash.png', { frameWidth: 512, frameHeight: 512 });
@@ -35,8 +47,11 @@ export default class MainScene extends Scene{
         const screen = ScreenHelper.getScreenDimensions(this);
 
         this.sound.add('sfxCrash');
-        this.sound.stopByKey('backgroundMusic');
-        this.sound.play('backgroundMusic');
+        this.sound.removeByKey('backgroundMusic');
+
+        const bgSound = this.sound.add('backgroundMusic');
+        bgSound.setLoop(true);
+        bgSound.play();
 
         this.backgroundIdx3 = this.add.tileSprite(960, 540, 1920, 1080, 'backgroundIdx3').setDisplaySize(screen.width, screen.height);
         this.backgroundIdx2 = this.add.tileSprite(960, 540, 1920, 1080, 'backgroundIdx2').setDisplaySize(screen.width, screen.height);
@@ -69,13 +84,6 @@ export default class MainScene extends Scene{
 
         ControlsHelper.callbackOnPointerDownOrSpace(this.makeRunnerJump, this);
 
-        /*
-        const spaceBar = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        if(spaceBar)
-            spaceBar.on('down', this.makeRunnerJump, this);
-        this.input.on('pointerdown', this.makeRunnerJump, this);
-        */
-
         this.runner.anims.play('run', true);
         this.cars = this.physics.add.group();
 
@@ -97,7 +105,7 @@ export default class MainScene extends Scene{
             this.splash.anims.play('splash', true);
 
             this.isJumping = true;
-            this.runner.setVelocityY(-300);
+            this.runner.setVelocityY(-320);
 
             if(this.runner.anims.currentAnim){
                 this.runner.anims.currentAnim.pause();
@@ -108,16 +116,23 @@ export default class MainScene extends Scene{
 
     incomingTraffic(){
 
-        for(let i = 0; i < 2; i++){
+        const screen = ScreenHelper.getScreenDimensions(this);
 
-            const speed = Phaser.Math.Between(-200,-500);
-            const screen = ScreenHelper.getScreenDimensions(this);
-            const car = this.cars.create(screen.width - speed, screen.height,'car1');
+        if(this.cars.children.entries.length < 3){
 
-            car.y -= car.displayHeight / 2;
-            (car.body as Phaser.Physics.Arcade.Body).allowGravity = false;
-            car.setVelocityX(speed);
-            (car.body as Phaser.Physics.Arcade.Body).setImmovable(true);
+            const car = new SmallVehicle(this, screen.width, screen.height, [this.cars]);
+        }
+        else{
+
+            const random = Phaser.Math.Between(1,3);
+
+            if(1 == random){
+                const car = new SmallVehicle(this, screen.width, screen.height, [this.cars]);
+            }else if(2 == random){
+                const truck = new MediumVehicle(this, screen.width, screen.height, [this.cars]);
+            } else if(3 == random){
+                const bus = new LargeVehicle(this, screen.width, screen.height, [this.cars]);
+            }
         }
     }
 
@@ -141,13 +156,24 @@ export default class MainScene extends Scene{
         this.cars.children.iterate((car:Phaser.GameObjects.GameObject):boolean | null => {
 
             const ptr = (car as unknown as Phaser.Physics.Arcade.Sprite);
-            if(ptr.x < -ptr.displayWidth)
-                ptr.x = screen.width; 
+            if(ptr.x < -ptr.displayWidth){
+                ptr.x = screen.width;
+                this.progressCurrentLevel++;
+            }
 
             return null;
         });
 
+        if(this.progressCurrentLevel == this.progressRequiredForNextLevel){
+  
+            this.incomingTraffic();
+            this.progressRequiredForNextLevel += this.progressRequiredForNextLevel;
+        }
+
         if(this.runner.x != 100){
+
+            this.progressCurrentLevel = 0;
+            this.progressRequiredForNextLevel = 1;
 
             this.sound.stopAll();
             this.sound.play('sfxCrash');
